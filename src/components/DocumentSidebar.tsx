@@ -5,6 +5,7 @@ import { Card } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import * as pdfjsLib from "pdfjs-dist";
 
 interface Document {
   id: string;
@@ -29,13 +30,40 @@ export const DocumentSidebar = ({
   const [uploading, setUploading] = useState(false);
   const { toast } = useToast();
 
+  const extractTextFromPDF = async (file: File): Promise<string> => {
+    // Set the worker source for PDF.js
+    pdfjsLib.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjsLib.version}/pdf.worker.min.js`;
+
+    const arrayBuffer = await file.arrayBuffer();
+    const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+    
+    let fullText = "";
+    for (let i = 1; i <= pdf.numPages; i++) {
+      const page = await pdf.getPage(i);
+      const textContent = await page.getTextContent();
+      const pageText = textContent.items
+        .map((item: any) => item.str)
+        .join(" ");
+      fullText += pageText + "\n\n";
+    }
+    
+    return fullText.trim();
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     setUploading(true);
     try {
-      const text = await file.text();
+      let text: string;
+      
+      // Handle PDF files differently
+      if (file.type === "application/pdf") {
+        text = await extractTextFromPDF(file);
+      } else {
+        text = await file.text();
+      }
       
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Not authenticated");
