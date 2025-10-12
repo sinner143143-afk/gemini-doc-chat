@@ -1,0 +1,7 @@
+project_id = "hprmpnylutobufcqomqi"
+
+[auth]
+enabled = true
+
+[functions.chat-with-document]
+verify_jwt = true
