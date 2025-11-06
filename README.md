@@ -1,73 +1,215 @@
-# Welcome to your Lovable project
+# DocChat AI
 
-## Project info
+A modern web application that enables users to upload PDF documents and have intelligent conversations about their content using the Google Gemini AI. Built with React, TypeScript, and Supabase for a seamless document-based RAG (Retrieval-Augmented Generation) experience.
 
-**URL**: https://lovable.dev/projects/d9e78ee5-65b0-4fb2-8011-170fc6e4d1e6
+## Features
 
-## How can I edit this code?
+- **PDF Upload & Parsing**: Upload PDF documents with automatic text extraction powered by PDF.js
+- **Document Management**: View, select, and delete your uploaded documents
+- **AI-Powered Chat**: Ask questions about your documents and get answers from Google Gemini
+- **Markdown Support**: AI responses are rendered with full Markdown formatting (bold, italics, code blocks, lists, links, etc.)
+- **User Authentication**: Secure login and registration with Supabase Auth
+- **Chat History**: Conversations are saved per document session
+- **Responsive Design**: Works seamlessly on desktop and mobile devices
 
-There are several ways of editing your application.
+## Technologies Used
 
-**Use Lovable**
+### Frontend
+- **React 18** - UI library with hooks
+- **TypeScript** - Type-safe development
+- **Vite** - Lightning-fast build tool
+- **Tailwind CSS** - Utility-first styling
+- **shadcn/ui** - High-quality React components
+- **React Router** - Client-side routing
+- **React Markdown** - Markdown rendering with GitHub Flavored Markdown support
+- **PDF.js** - PDF document parsing and text extraction
+- **React Hook Form** - Efficient form handling
+- **TanStack React Query** - Data synchronization and caching
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/d9e78ee5-65b0-4fb2-8011-170fc6e4d1e6) and start prompting.
+### Backend & Database
+- **Supabase** - PostgreSQL database and authentication
+- **Supabase Edge Functions** - Serverless functions for AI integration
+- **Google Gemini API** - AI model for document Q&A
 
-Changes made via Lovable will be committed automatically to this repo.
+### UI & Design
+- **Radix UI** - Headless component primitives
+- **Lucide React** - Icon library
+- **Sonner** - Toast notifications
+- **Date-fns** - Date utilities
 
-**Use your preferred IDE**
+## Project Structure
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```
+project/
+├── src/
+│   ├── components/
+│   │   ├── auth/
+│   │   │   └── AuthForm.tsx           # Login/Registration form
+│   │   ├── ui/                        # shadcn UI components
+│   │   ├── ChatInterface.tsx          # Chat window with Markdown rendering
+│   │   └── DocumentSidebar.tsx        # Document list and upload
+│   ├── pages/
+│   │   ├── Index.tsx                  # Main routing page
+│   │   ├── Dashboard.tsx              # Main application dashboard
+│   │   └── NotFound.tsx               # 404 page
+│   ├── hooks/
+│   │   ├── use-toast.ts               # Toast notification hook
+│   │   └── use-mobile.tsx             # Mobile detection hook
+│   ├── integrations/
+│   │   └── supabase/
+│   │       ├── client.ts              # Supabase client configuration
+│   │       └── types.ts               # TypeScript types from Supabase
+│   ├── lib/
+│   │   └── utils.ts                   # Utility functions
+│   ├── App.tsx                        # Main app wrapper
+│   ├── main.tsx                       # Entry point
+│   ├── index.css                      # Global styles
+│   └── vite-env.d.ts                  # Vite environment types
+├── supabase/
+│   ├── functions/
+│   │   └── chat-with-document/        # Edge function for AI chat
+│   │       └── index.ts
+│   ├── migrations/
+│   │   └── *.sql                      # Database schema migrations
+│   └── config.toml                    # Supabase local config
+├── public/
+│   ├── pdf.worker.min.mjs             # PDF.js worker (for parsing)
+│   └── ...                            # Static assets
+├── vite.config.ts                     # Vite configuration
+├── tailwind.config.ts                 # Tailwind CSS configuration
+├── tsconfig.json                      # TypeScript configuration
+├── package.json                       # Dependencies
+└── README.md                          # This file
 ```
 
-**Edit a file directly in GitHub**
+## Database Schema
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+The application uses three main tables:
 
-**Use GitHub Codespaces**
+### documents
+Stores uploaded PDF documents and their extracted text content.
+- `id` - UUID primary key
+- `user_id` - Reference to authenticated user
+- `title` - Document filename
+- `content` - Extracted text from PDF
+- `file_type` - MIME type
+- `file_size` - File size in bytes
+- `created_at`, `updated_at` - Timestamps
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+### chat_sessions
+Manages conversation sessions per document.
+- `id` - UUID primary key
+- `user_id` - Reference to authenticated user
+- `document_id` - Reference to document
+- `created_at`, `updated_at` - Timestamps
 
-## What technologies are used for this project?
+### chat_messages
+Stores individual chat messages in a session.
+- `id` - UUID primary key
+- `session_id` - Reference to chat session
+- `role` - "user" or "assistant"
+- `content` - Message content
+- `created_at` - Message timestamp
 
-This project is built with:
+All tables use Row Level Security (RLS) to ensure users can only access their own data.
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+## Getting Started
 
-## How can I deploy this project?
+### Prerequisites
+- Node.js 16+ and npm/yarn/bun
+- Supabase account and project
+- Google Gemini API key
 
-Simply open [Lovable](https://lovable.dev/projects/d9e78ee5-65b0-4fb2-8011-170fc6e4d1e6) and click on Share -> Publish.
+### Environment Setup
 
-## Can I connect a custom domain to my Lovable project?
+1. **Clone the repository** (if applicable) or ensure you have all project files
 
-Yes, you can!
+2. **Create a `.env` file** in the project root with your Supabase credentials:
+   ```
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_PROJECT_ID=your_supabase_project_id
+   VITE_SUPABASE_PUBLISHABLE_KEY=your_supabase_anon_key
+   ```
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+3. **Set up Supabase Edge Function secret** (for AI integration):
+   The `LOVABLE_API_KEY` environment variable should be set in your Supabase project for the Edge Function to access the Gemini API. This is configured via the Supabase dashboard.
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+### Installation
+
+1. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+2. **Verify database migrations**:
+   ```bash
+   supabase db status  # If using Supabase CLI locally
+   ```
+
+### Running Locally
+
+1. **Start the development server**:
+   ```bash
+   npm run dev
+   ```
+   The application will be available at `http://localhost:5173`
+
+2. **Build for production**:
+   ```bash
+   npm run build
+   ```
+
+3. **Preview production build**:
+   ```bash
+   npm run preview
+   ```
+
+4. **Run linting**:
+   ```bash
+   npm lint
+   ```
+
+## Usage
+
+1. **Sign Up**: Create a new account with email and password
+2. **Upload Document**: Click "Upload Document" and select a PDF file
+3. **Ask Questions**: Select a document and ask questions about its content
+4. **View Responses**: AI responses are formatted with Markdown support including code blocks, lists, and links
+5. **Manage Documents**: Delete documents you no longer need from the sidebar
+
+## API Integration
+
+### Edge Function: chat-with-document
+Located at `supabase/functions/chat-with-document/`, this function:
+- Accepts user messages and document content
+- Sends requests to Google Gemini API
+- Returns formatted AI responses
+- Handles errors and rate limiting gracefully
+
+## Security
+
+- All database access is protected with Row Level Security (RLS)
+- User authentication is handled by Supabase Auth
+- API keys are kept secure in environment variables and Edge Function secrets
+- Users can only access their own documents and chat history
+
+## Troubleshooting
+
+### PDF Upload Fails
+- Ensure the PDF is not corrupted
+- Check that the file is under reasonable size limits
+- Verify the PDF.js worker file is being served correctly
+
+### Chat Not Working
+- Verify your Supabase credentials in `.env`
+- Check that the Edge Function is deployed
+- Ensure the Gemini API key is configured in Supabase
+
+### Build Errors
+- Clear `node_modules` and reinstall: `rm -rf node_modules && npm install`
+- Clear build cache: `rm -rf dist`
+- Ensure you're using a compatible Node.js version (16+)
+
+## License
+
+This project is open source and available under the MIT License.
