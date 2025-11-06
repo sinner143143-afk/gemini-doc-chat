@@ -16,6 +16,25 @@ export const AuthForm = () => {
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!email || !password) {
+      toast({
+        title: "Error",
+        description: "Please fill in all fields",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (password.length < 6) {
+      toast({
+        title: "Error",
+        description: "Password must be at least 6 characters",
+        variant: "destructive",
+      });
+      return;
+    }
+
     setLoading(true);
 
     try {
@@ -29,9 +48,19 @@ export const AuthForm = () => {
         toast({ title: "Account created! You can now sign in." });
       }
     } catch (error: any) {
+      let errorMessage = error.message || "An error occurred";
+
+      if (error.message?.includes("Failed to fetch")) {
+        errorMessage = "Unable to connect to server. Please check your internet connection and ensure Supabase is accessible.";
+      } else if (error.message?.includes("Invalid login credentials")) {
+        errorMessage = "Invalid email or password";
+      } else if (error.message?.includes("already registered")) {
+        errorMessage = "This email is already registered. Please sign in instead.";
+      }
+
       toast({
         title: "Error",
-        description: error.message,
+        description: errorMessage,
         variant: "destructive",
       });
     } finally {
